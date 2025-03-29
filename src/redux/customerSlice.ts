@@ -1,12 +1,26 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import Customer from "@/models/Customer.ts";
+import authService from "@/service/authService.ts";
 
 const initialState: Customer[] = [];
 
 const api = axios.create({
     baseURL: "http://localhost:3000/customer",
 });
+
+api.interceptors.request.use(
+    (config) => {
+        const token = authService.getToken();
+        if (token) {
+            config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 // Save Customer
 export const saveCustomer = createAsyncThunk(
@@ -55,7 +69,8 @@ export const getCustomer = createAsyncThunk(
     "customer/getCustomer",
     async (customerId: string) => {
         try {
-            const response = await api.get(`/${customerId}`);
+            console.log(customerId)
+            const response = await api.get(`/get/${customerId}`);
             return response.data as Customer;
         } catch (err) {
             console.error("Error fetching customer:", err);

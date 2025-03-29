@@ -1,12 +1,26 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 import Service from "@/models/Service.ts";
+import authService from "@/service/authService.ts";
 
 const initialState: Service[] = [];
 
 const api = axios.create({
-    baseURL: "http://localhost:3000/service",
+    baseURL: "https://salon-booking-backend-oxwm.onrender.com/service",
 });
+
+api.interceptors.request.use(
+    (config) => {
+        const token = authService.getToken();
+        if (token) {
+            config.headers["Authorization"] = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export const saveService = createAsyncThunk(
     "service/saveService",
